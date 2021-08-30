@@ -1,54 +1,53 @@
 version: "3.8"
 services:
-  apache:
-    build: .docker/apache
-    container_name: sf5_apache
-    ports:
-      - 80:80
+  db:
+    image: mysql
+    container_name: db_exercice_symfony
+    restart: always
     volumes:
-      - .docker/config/vhosts:/etc/apache2/sites-enabled
-      - .:/home/wwwroot/sf5
-    depends_on:
-      - php
-
-  mysql:
-    image: mysql:8
-    container_name: sf5_mysql
-    volumes:
-      - .docker/data/db:/var/lib/mysql
-    command:
-      - "--default-authentication-plugin=mysql_native_password"
-      - "--lower_case_table_names=1"
+      - db-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: sf5
-      MYSQL_USER: sf5
-      MYSQL_PASSWORD: sf5
-
-  php:
-    build: .docker/php
-    container_name: sf5_php
-    volumes:
-      - .:/home/wwwroot/sf5
-    environment:
-      - maildev_host=sf5_maildev
-    depends_on:
-      - maildev
-      - mysql
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - dev
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: sf5_phpmyadmin
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
+    image: phpmyadmin
+    container_name: phpmyadmin_exercice_symfony
+    restart: always
+    depends_on:
+      - db
     ports:
       - 8080:80
-    links:
-      - mysql
+    environment:
+      PMA_HOST: db
+    networks:
+      - dev
 
   maildev:
-    image: djfarrelly/maildev
-    container_name: sf5_maildev
+    image: maildev/maildev
+    container_name: maildev_exercice_symfony
+    command: bin/maildev --web 80 --smtp 25 --hide-extensions STARTTLS
     ports:
-      - 8001:80
+      - "8081:80"
+    restart: always
+    networks:
+      - dev
+
+  app:
+    build: php
+    container_name: app_exercice_symfony
+    ports:
+      - "8741:80"
+    volumes:
+      - ./php/vhosts:/etc/apache2/sites-enabled
+      - ./:/var/www
+    restart: always
+    networks:
+      - dev
+
+networks:
+  dev:
+
+volumes:
+  db-data:
