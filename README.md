@@ -111,7 +111,12 @@ La commande `exit` vous fera sortir du terminal Docker pour revenir au terminal 
 
 __2. Création de votre application Symfony :__
 
-Vous devez créer votre projet symfony avec l'aide de __composer__ depuis le terminal Docker.
+Vous devez créer votre projet symfony avec l'aide de __composer__ depuis le terminal Docker :
+- ```shell
+  composer create-project symfony/skeleton my_project_directory
+  cd my_project_directory
+  composer require webapp
+  ```
 
 __Faire votre commit avec le message "Init Symfony project"__
 
